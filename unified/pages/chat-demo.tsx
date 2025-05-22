@@ -149,17 +149,24 @@ export default function ChatDemoPage() {
           <PremiumFloatingButton 
             onClick={() => setIsOpen(true)}
             hasNewMessage={hasNewMessage}
-            isAIActive={isTyping}
+            processingState={isTyping ? 'thinking' : 'idle'}
           />
         )}
         
-        <PremiumChatWidget
-          isOpen={isOpen}
-          onToggle={() => setIsOpen(!isOpen)}
-          onSendMessage={handleSendMessage}
-          messages={messages}
-          isTyping={isTyping}
-        />
+        {isOpen && (
+          <PremiumChatWidget
+            messages={messages as any}
+            onSendMessage={handleSendMessage}
+            processingState={isTyping ? 'thinking' : 'idle'}
+            streamingResponse=""
+            suggestions={[]}
+            onClose={() => setIsOpen(false)}
+            onFullscreen={() => {}}
+            isFullscreen={false}
+            theme="dark"
+            features={{}}
+          />
+        )}
       </div>
     </>
   );

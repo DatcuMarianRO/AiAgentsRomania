@@ -2,32 +2,38 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { widgetVariants, messageVariants, typingVariants, dotVariants } from '../utils/animations';
 
-interface Message {
-  id: string;
-  type: 'user' | 'ai';
-  content: string;
-  timestamp: Date;
-  actions?: Array<{
-    id: string;
-    label: string;
-    icon?: string;
-  }>;
-}
+import { Message as StoreMessage, Suggestion } from '../store/aiAgentStore';
 
 interface PremiumChatWidgetProps {
-  isOpen: boolean;
-  onToggle: () => void;
+  messages: StoreMessage[];
   onSendMessage: (message: string) => void;
-  messages: Message[];
-  isTyping?: boolean;
+  processingState: 'idle' | 'thinking' | 'responding';
+  streamingResponse?: string;
+  suggestions?: Suggestion[];
+  onClose: () => void;
+  onFullscreen: () => void;
+  isFullscreen: boolean;
+  theme: 'light' | 'dark' | 'auto';
+  features?: {
+    sales?: boolean;
+    support?: boolean;
+    guide?: boolean;
+    voice?: boolean;
+    proactive?: boolean;
+  };
 }
 
 export const PremiumChatWidget: React.FC<PremiumChatWidgetProps> = ({
-  isOpen,
-  onToggle,
-  onSendMessage,
   messages,
-  isTyping = false
+  onSendMessage,
+  processingState,
+  streamingResponse,
+  suggestions = [],
+  onClose,
+  onFullscreen,
+  isFullscreen,
+  theme,
+  features = {}
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [textareaHeight, setTextareaHeight] = useState('auto');
@@ -37,7 +43,7 @@ export const PremiumChatWidget: React.FC<PremiumChatWidgetProps> = ({
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+  }, [messages, processingState]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -64,8 +70,6 @@ export const PremiumChatWidget: React.FC<PremiumChatWidgetProps> = ({
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -115,13 +119,13 @@ export const PremiumChatWidget: React.FC<PremiumChatWidgetProps> = ({
               
               {/* Header Controls */}
               <div className="flex items-center gap-2">
-                <button className="p-2 hover:bg-white/10 rounded-lg transition-all duration-200">
+                <button onClick={onFullscreen} className="p-2 hover:bg-white/10 rounded-lg transition-all duration-200">
                   <svg className="w-5 h-5 text-gray-400 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
                           d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                   </svg>
                 </button>
-                <button onClick={onToggle} 
+                <button onClick={onClose} 
                         className="p-2 hover:bg-white/10 rounded-lg transition-all duration-200">
                   <svg className="w-5 h-5 text-gray-400 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -148,41 +152,23 @@ export const PremiumChatWidget: React.FC<PremiumChatWidgetProps> = ({
                     delay: index * 0.05,
                     ease: [0.25, 0.8, 0.25, 1]
                   }}
-                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={`max-w-[80%] ${message.type === 'user' ? 'order-1' : ''}`}>
+                  <div className={`max-w-[80%] ${message.role === 'user' ? 'order-1' : ''}`}>
                     {/* Message Bubble */}
                     <div className={`px-4 py-3 rounded-2xl ${
-                      message.type === 'user' 
+                      message.role === 'user' 
                         ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-tr-sm' 
                         : 'bg-[#2D3748] text-[#F7FAFC] rounded-tl-sm'
                     }`}>
                       <p className="text-[15px] leading-relaxed">{message.content}</p>
                     </div>
-                    
-                    {/* Suggested Actions */}
-                    {message.actions && (
-                      <div className="mt-2 space-y-2">
-                        {message.actions.map((action) => (
-                          <button
-                            key={action.id}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
-                                     bg-[#2D3748] text-gray-300 border border-purple-500/30
-                                     hover:bg-purple-500/20 hover:border-purple-500/50 hover:text-white
-                                     transition-all duration-200"
-                          >
-                            {action.icon && <span>{action.icon}</span>}
-                            <span>{action.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </motion.div>
               ))}
               
               {/* Typing Indicator */}
-              {isTyping && (
+              {processingState !== 'idle' && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -254,7 +240,5 @@ export const PremiumChatWidget: React.FC<PremiumChatWidgetProps> = ({
             </form>
           </div>
         </motion.div>
-      )}
-    </AnimatePresence>
   );
 };

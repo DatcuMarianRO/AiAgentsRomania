@@ -4,13 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface PremiumFloatingButtonProps {
   onClick: () => void;
   hasNewMessage?: boolean;
-  isAIActive?: boolean;
+  processingState?: 'idle' | 'thinking' | 'responding';
+  theme?: 'light' | 'dark' | 'auto';
 }
 
 export const PremiumFloatingButton: React.FC<PremiumFloatingButtonProps> = ({
   onClick,
   hasNewMessage = false,
-  isAIActive = false
+  processingState = 'idle',
+  theme = 'dark'
 }) => {
   const [showPulse, setShowPulse] = useState(false);
 
@@ -33,7 +35,7 @@ export const PremiumFloatingButton: React.FC<PremiumFloatingButtonProps> = ({
       <div className="relative">
         {/* Glow Effect Background */}
         <div className={`absolute inset-0 rounded-full transition-all duration-500 ${
-          isAIActive 
+          processingState !== 'idle'
             ? 'bg-gradient-to-r from-blue-600 to-purple-600 blur-xl opacity-60' 
             : 'bg-gradient-to-r from-blue-500 to-purple-500 blur-lg opacity-40'
         } group-hover:opacity-80`} />
@@ -52,7 +54,7 @@ export const PremiumFloatingButton: React.FC<PremiumFloatingButtonProps> = ({
           </div>
           
           {/* Active Status Ring */}
-          {isAIActive && (
+          {processingState !== 'idle' && (
             <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-ping" />
           )}
         </div>
