@@ -4,18 +4,15 @@ import { PremiumChatWidget } from '../components/ai-agent-romania/ui/PremiumChat
 import { PremiumFloatingButton } from '../components/ai-agent-romania/ui/PremiumFloatingButton';
 import '../styles/premium-chat-widget.css';
 
+import { Message } from '../components/ai-agent-romania/store/aiAgentStore';
+
 // Mock messages for demo
-const initialMessages = [
+const initialMessages: Message[] = [
   {
     id: '1',
-    type: 'ai' as const,
+    role: 'assistant',
     content: 'Bună! 👋 Sunt AI AGENT ROMANIA™, asistentul tău personal pentru soluții AI de ultimă generație. Cum te pot ajuta astăzi?',
-    timestamp: new Date(),
-    actions: [
-      { id: 'a1', label: 'Vezi demo', icon: '🎥' },
-      { id: 'a2', label: 'Află beneficiile', icon: '✨' },
-      { id: 'a3', label: 'Calculează ROI', icon: '📊' }
-    ]
+    timestamp: new Date()
   }
 ];
 
@@ -27,9 +24,9 @@ export default function ChatDemoPage() {
 
   const handleSendMessage = (message: string) => {
     // Add user message
-    const userMessage = {
+    const userMessage: Message = {
       id: Date.now().toString(),
-      type: 'user' as const,
+      role: 'user',
       content: message,
       timestamp: new Date()
     };
@@ -40,37 +37,18 @@ export default function ChatDemoPage() {
     // Simulate AI response
     setTimeout(() => {
       const aiResponses = [
-        {
-          content: 'Excelentă întrebare! Permiteți-mi să vă ofer informații detaliate despre aceasta.',
-          actions: [
-            { id: 'b1', label: 'Programează o întâlnire', icon: '📅' },
-            { id: 'b2', label: 'Vezi studii de caz', icon: '📈' }
-          ]
-        },
-        {
-          content: 'Am pregătit pentru tine o analiză personalizată bazată pe nevoile tale specifice.',
-          actions: [
-            { id: 'c1', label: 'Descarcă raportul', icon: '📄' },
-            { id: 'c2', label: 'Discută cu un expert', icon: '💬' }
-          ]
-        },
-        {
-          content: 'Platformele noastre AI pot automatiza până la 80% din procesele repetitive, economisind timp prețios echipei tale.',
-          actions: [
-            { id: 'd1', label: 'Vezi cum funcționează', icon: '🔧' },
-            { id: 'd2', label: 'Testează gratuit', icon: '🆓' }
-          ]
-        }
+        'Excelentă întrebare! Permiteți-mi să vă ofer informații detaliate despre aceasta.',
+        'Am pregătit pentru tine o analiză personalizată bazată pe nevoile tale specifice.',
+        'Platformele noastre AI pot automatiza până la 80% din procesele repetitive, economisind timp prețios echipei tale.'
       ];
       
       const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
       
-      const aiMessage = {
+      const aiMessage: Message = {
         id: Date.now().toString(),
-        type: 'ai' as const,
-        content: randomResponse.content,
-        timestamp: new Date(),
-        actions: randomResponse.actions
+        role: 'assistant',
+        content: randomResponse,
+        timestamp: new Date()
       };
       
       setMessages(prev => [...prev, aiMessage]);
@@ -155,7 +133,7 @@ export default function ChatDemoPage() {
         
         {isOpen && (
           <PremiumChatWidget
-            messages={messages as any}
+            messages={messages}
             onSendMessage={handleSendMessage}
             processingState={isTyping ? 'thinking' : 'idle'}
             streamingResponse=""
