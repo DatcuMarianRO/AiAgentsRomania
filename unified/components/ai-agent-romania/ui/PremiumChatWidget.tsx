@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { widgetVariants, messageVariants, typingVariants, dotVariants } from '../utils/animations';
 
 import { Message as StoreMessage, Suggestion } from '../store/aiAgentStore';

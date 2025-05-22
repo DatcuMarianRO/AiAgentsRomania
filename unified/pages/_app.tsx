@@ -4,6 +4,7 @@ import '../styles/globals.css';
 import '../styles/premium-chat-widget.css';
 import { AuthProvider } from '../hooks/useAuth';
 import { AdminProvider } from '../contexts/AdminContext';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 // Dynamically import AI Agent to avoid SSR issues
 const AIAgentRomania = dynamic(
@@ -19,26 +20,28 @@ export default function UnifiedApp({ Component, pageProps }: AppProps) {
   const widgetEnabled = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_WIDGET_ENABLED !== 'false';
 
   return (
-    <AuthProvider>
-      <AdminProvider>
-        <Component {...pageProps} />
-        {widgetEnabled && (
-          <AIAgentRomania 
-            apiKey={apiKey}
-            position="bottom-right"
-            theme="auto"
-            language="auto"
-            features={{
-              sales: true,
-              support: true,
-              guide: true,
-              voice: true,
-              proactive: true
-            }}
-            initialOpen={false}
-          />
-        )}
-      </AdminProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AdminProvider>
+          <Component {...pageProps} />
+          {widgetEnabled && (
+            <AIAgentRomania 
+              apiKey={apiKey}
+              position="bottom-right"
+              theme="auto"
+              language="auto"
+              features={{
+                sales: true,
+                support: true,
+                guide: true,
+                voice: true,
+                proactive: true
+              }}
+              initialOpen={false}
+            />
+          )}
+        </AdminProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
