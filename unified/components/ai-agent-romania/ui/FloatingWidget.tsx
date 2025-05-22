@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { PremiumChatWidget } from './PremiumChatWidget';
+import { PremiumFloatingButton } from './PremiumFloatingButton';
 import { ChatInterface } from './ChatInterface';
 import { MinimizedBubble } from './MinimizedBubble';
 import { QuickActions } from './QuickActions';

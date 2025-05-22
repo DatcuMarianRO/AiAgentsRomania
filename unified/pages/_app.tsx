@@ -1,6 +1,7 @@
 import type { AppProps } from 'next/app';
 import dynamic from 'next/dynamic';
 import '../styles/globals.css';
+import '../styles/premium-chat-widget.css';
 import { AuthProvider } from '../hooks/useAuth';
 import { AdminProvider } from '../contexts/AdminContext';
 

@@ -20,6 +20,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^4.19.2",
+    "framer-motion": "^12.12.1",
     "gsap": "^3.12.5",
     "helmet": "^8.1.0",
     "http-proxy-middleware": "^3.0.0",
