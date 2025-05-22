@@ -2103,3 +2103,107 @@
     animation: none;
   }
 }
+
+/* AI Agent Romania Widget Styles */
+.ai-agent-widget {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.ai-agent-widget * {
+  box-sizing: border-box;
+}
+
+.ai-agent-widget::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ai-agent-widget::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ai-agent-widget::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.3);
+  border-radius: 3px;
+}
+
+.ai-agent-widget::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.5);
+}
+
+/* Message animations */
+.ai-agent-message-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.ai-agent-message-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease-out;
+}
+
+/* Typing indicator */
+.ai-agent-typing-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #9ca3af;
+  margin: 0 2px;
+  animation: ai-agent-typing 1.4s infinite;
+}
+
+.ai-agent-typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.ai-agent-typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes ai-agent-typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Pulse animation for minimized bubble */
+@keyframes ai-agent-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+  }
+}
+
+/* Glass morphism enhancements */
+.ai-agent-glass {
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Smooth transitions */
+.ai-agent-transition {
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .ai-agent-widget {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
+  
+  .ai-agent-widget input,
+  .ai-agent-widget textarea {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
+}
