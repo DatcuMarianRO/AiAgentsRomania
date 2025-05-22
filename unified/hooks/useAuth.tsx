@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           role: 'admin' as const,
           subscription_tier: 'enterprise' as const,
           credits_available: 999999,
-          avatar_url: null
+          avatar_url: undefined
         };
         
         localStorage.setItem('accessToken', 'admin-token-test');
@@ -186,7 +186,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         role: 'admin' as const,
         subscription_tier: 'enterprise' as const,
         credits_available: 999999,
-        avatar_url: null
+        avatar_url: undefined
       };
       setUser(adminUser);
       setInitialized(true);

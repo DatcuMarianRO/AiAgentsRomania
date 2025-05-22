@@ -48,8 +48,8 @@ const NeuralBackground: React.FC<NeuralBackgroundProps> = ({ className = '' }) =
     mountRef.current.appendChild(renderer.domElement);
 
     // Neural Network Creation
-    const nodes = [];
-    const connections = [];
+    const nodes: any[] = [];
+    const connections: any[] = [];
     const nodeGeometry = new THREE.SphereGeometry(0.1, 8, 6);
     const nodeMaterial = new THREE.MeshBasicMaterial({ 
       color: 0x3b82f6,

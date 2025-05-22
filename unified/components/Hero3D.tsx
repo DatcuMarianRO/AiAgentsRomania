@@ -36,8 +36,8 @@ const Hero3D: React.FC = () => {
     renderer.setClearColor(0x000000, 0);
 
     // Create AI Brain Network
-    const nodes = [];
-    const connections = [];
+    const nodes: any[] = [];
+    const connections: any[] = [];
     
     // Node geometry and materials
     const nodeGeometry = new THREE.SphereGeometry(0.15, 16, 16);

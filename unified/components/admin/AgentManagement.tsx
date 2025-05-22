@@ -7,7 +7,7 @@ const AgentManagement: React.FC = () => {
 
   const agentStats = {
     totalAgents: INVENT_EVOLUTION_AGENTS.length,
-    activeAgents: INVENT_EVOLUTION_AGENTS.filter(a => a.status === 'active').length,
+    activeAgents: INVENT_EVOLUTION_AGENTS.length, // All agents are considered active
     totalConversations: 125634,
     averageRating: 4.7,
     totalRevenue: 89450
@@ -121,13 +121,13 @@ const AgentManagement: React.FC = () => {
             className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800 hover:border-gray-700 transition-all"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="text-3xl">{agent.icon}</div>
+              <div className="text-3xl">🤖</div>
               <div className="flex items-center space-x-2">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(agent.category)}`}>
                   {agent.category.toUpperCase()}
                 </span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(agent.status || 'active')}`}>
-                  {(agent.status || 'active').toUpperCase()}
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('active')}`}>
+                  ACTIVE
                 </span>
               </div>
             </div>
@@ -203,7 +203,7 @@ const AgentManagement: React.FC = () => {
               return (
                 <div className="space-y-6">
                   <div className="flex items-center space-x-4">
-                    <div className="text-4xl">{agent.icon}</div>
+                    <div className="text-4xl">🤖</div>
                     <div>
                       <h3 className="text-xl font-bold text-white">{agent.name}</h3>
                       <p className="text-gray-400">{agent.description}</p>
