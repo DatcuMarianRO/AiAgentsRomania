@@ -15,7 +15,7 @@ const AIAgentRomania = dynamic(
 
 export default function UnifiedApp({ Component, pageProps }: AppProps) {
   const apiKey = process.env.OPENROUTER_API_KEY || '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';
-  const widgetEnabled = process.env.NEXT_PUBLIC_WIDGET_ENABLED !== 'false';
+  const widgetEnabled = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_WIDGET_ENABLED !== 'false';
 
   return (
     <AuthProvider>
