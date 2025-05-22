@@ -13,8 +13,15 @@ export default function HomePage() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    setIsVisible(true);
+    // Small delay to ensure proper animation
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 100);
     
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     // Advanced mouse tracking for 2025 interactive effects
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ 

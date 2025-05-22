@@ -25,7 +25,7 @@ export const AIAgentRomania: React.FC<AIAgentRomaniaProps> = ({
   apiKey,
   position = 'bottom-right',
   theme = 'auto',
-  language = 'auto',
+  language = 'auto', // eslint-disable-line @typescript-eslint/no-unused-vars
   features = {
     sales: true,
     support: true,
@@ -42,7 +42,7 @@ export const AIAgentRomania: React.FC<AIAgentRomaniaProps> = ({
   const [processingState, setProcessingState] = useState<'idle' | 'thinking' | 'responding'>('idle');
   const [streamingResponse, setStreamingResponse] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [quickActions, setQuickActions] = useState<QuickAction[]>([]);
+  const [quickActions] = useState<QuickAction[]>([]);
   
   const openRouterRef = useRef<OpenRouterClient | null>(null);
   const conversationEngineRef = useRef<ConversationEngine | null>(null);
@@ -145,13 +145,13 @@ export const AIAgentRomania: React.FC<AIAgentRomaniaProps> = ({
     const context = contextManagerRef.current?.getContext();
     if (!context) return;
 
-    const metadata = context.metadata || {};
+    const metadata = context.metadata || { suggestions: [] };
     setSuggestions(
-      metadata.suggestions?.map((text: string, index: number) => ({
+      metadata.suggestions.map((text: string, index: number) => ({
         id: index.toString(),
         text,
         icon: ['🎯', '✨', '🚀'][index] || '💡'
-      })) || []
+      }))
     );
   };
 
