@@ -1829,3 +1829,277 @@
     color: black;
   }
 }
+
+/* Cinematic Spline 3D Robot Styles */
+.spline-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.spline-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Cinematic Loading Animation */
+.spline-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+  z-index: 2;
+}
+
+.loading-robot {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  animation: cinematic-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.loading-robot-inner {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>') center/contain no-repeat;
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>') center/contain no-repeat;
+  animation: loading-rotate 3s linear infinite;
+}
+
+.loading-glow {
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
+  filter: blur(20px);
+  animation: loading-glow-pulse 2s ease-in-out infinite;
+}
+
+.loading-text {
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #60a5fa;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* Cinematic Particle System */
+.particle-system {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.8) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: particle-drift 20s linear infinite;
+}
+
+.particle:nth-child(odd) {
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.8) 0%, transparent 70%);
+  animation-duration: 25s;
+}
+
+.particle:nth-child(even) {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.8) 0%, transparent 70%);
+  animation-duration: 30s;
+}
+
+/* Cinematic Light Rays */
+.light-rays {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.light-ray {
+  position: absolute;
+  width: 2px;
+  height: 200%;
+  background: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+  transform: rotate(45deg);
+  animation: light-sweep 8s ease-in-out infinite;
+}
+
+.light-ray:nth-child(1) { left: 10%; animation-delay: 0s; }
+.light-ray:nth-child(2) { left: 30%; animation-delay: 1s; }
+.light-ray:nth-child(3) { left: 50%; animation-delay: 2s; }
+.light-ray:nth-child(4) { left: 70%; animation-delay: 3s; }
+.light-ray:nth-child(5) { left: 90%; animation-delay: 4s; }
+
+/* Depth of Field Blur */
+.depth-blur-back {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(0, 0, 0, 0.2) 100%);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: -1;
+}
+
+.depth-blur-front {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, transparent 60%, rgba(0, 0, 0, 0.1) 100%);
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Cinematic Glow Effects */
+.robot-glow {
+  position: absolute;
+  inset: -50px;
+  background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.2) 0%, transparent 50%);
+  filter: blur(40px);
+  animation: robot-glow-pulse 4s ease-in-out infinite;
+  z-index: 0;
+}
+
+/* Interactive Hint */
+.interaction-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0;
+  animation: hint-fade-in 1s ease-out 2s forwards;
+  z-index: 10;
+}
+
+.hint-icon {
+  width: 20px;
+  height: 20px;
+  animation: hint-bounce 2s ease-in-out infinite;
+}
+
+/* Cinematic Animations */
+@keyframes cinematic-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes loading-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loading-glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes particle-drift {
+  from {
+    transform: translate(0, 100vh) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  to {
+    transform: translate(100px, -100vh) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes light-sweep {
+  0%, 100% {
+    transform: translateX(-100vw) rotate(45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(0) rotate(45deg);
+    opacity: 1;
+  }
+}
+
+@keyframes robot-glow-pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes hint-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hint-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .loading-robot {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .interaction-hint {
+    font-size: 0.75rem;
+    padding: 10px 20px;
+  }
+  
+  .particle {
+    width: 2px;
+    height: 2px;
+  }
+}
+
+/* Performance Optimizations */
+@media (prefers-reduced-motion: reduce) {
+  .particle-system,
+  .light-rays,
+  .loading-robot-inner,
+  .robot-glow {
+    animation: none !important;
+  }
+  
+  .interaction-hint {
+    opacity: 1;
+    animation: none;
+  }
+}

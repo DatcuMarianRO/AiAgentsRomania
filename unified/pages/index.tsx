@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuth } from '../hooks/useAuth';
 import InventEvolutionShowcase from '../components/InventEvolutionShowcase';
-import InteractiveRobot from '../components/InteractiveRobot';
+import SplineRobot from '../components/SplineRobot';
 
 export default function HomePage() {
   const router = useRouter();
@@ -275,9 +275,12 @@ export default function HomePage() {
           
           <div className={`relative z-10 max-w-8xl mx-auto text-center transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             
-            {/* AI Robot with Enhanced 3D Effects */}
+            {/* Cinematic 3D Spline Robot */}
             <div className="mb-16 ai-float" style={{animationDelay: '0.2s'}}>
-              <InteractiveRobot className="mx-auto transform hover:scale-110 transition-all duration-700 ai-3d-hover" />
+              <SplineRobot 
+                className="mx-auto w-full max-w-4xl h-[600px] transform hover:scale-105 transition-all duration-700 ai-3d-hover" 
+                sceneUrl="https://prod.spline.design/1UXn54MQwsum35o7/scene.splinecode"
+              />
             </div>
 
             {/* Premium Status Badge */}
