@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import Script from 'next/script';
 
 interface SplineRobotProps {
@@ -11,21 +11,6 @@ const SplineRobot: React.FC<SplineRobotProps> = ({
   sceneUrl = 'https://prod.spline.design/1UXn54MQwsum35o7/scene.splinecode'
 }) => {
   const splineRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Handle Spline load
-  const handleSplineLoad = () => {
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    // Set loading to false after a timeout as fallback
-    const timeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 5000);
-
-    return () => clearTimeout(timeout);
-  }, []);
 
   return (
     <>
@@ -44,7 +29,6 @@ const SplineRobot: React.FC<SplineRobotProps> = ({
           {/* @ts-ignore - Spline viewer web component */}
           <spline-viewer 
             url={sceneUrl}
-            onload={handleSplineLoad}
             style={{ width: '100%', height: '100%' }}
             events-target="global"
             mouse-target="global"
