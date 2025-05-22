@@ -1,6 +1,5 @@
 import { OpenRouterClient, ChatMessage } from '../intelligence/OpenRouterClient';
 import { ContextManager } from './ContextManager';
-import { useAIAgentStore } from '../store/aiAgentStore';
 
 export class ConversationEngine {
   private openRouter: OpenRouterClient;
@@ -19,7 +18,6 @@ export class ConversationEngine {
       context?: any;
     } = {}
   ): Promise<any> {
-    const store = useAIAgentStore.getState();
     const context = this.contextManager.getContext();
     
     // Add user message to history
@@ -30,14 +28,13 @@ export class ConversationEngine {
     };
     
     this.conversationHistory.push(userMessage);
-    store.addMessage(userMessage);
 
     // Generate system prompt
     const systemPrompt = await this.openRouter.generateSystemPrompt({
-      page: context.path,
+      page: context?.path,
       language: this.detectLanguage(message),
-      userProfile: store.userProfile,
-      conversationMode: store.conversationMode
+      userProfile: { type: 'visitor' },
+      conversationMode: 'general'
     });
 
     // Prepare messages for API
@@ -67,9 +64,6 @@ export class ConversationEngine {
         };
         this.conversationHistory.push(assistantMessage);
       }
-
-      // Update suggestions based on response
-      this.updateSuggestions(taskType, context);
 
       return response;
     } catch (error) {
@@ -156,43 +150,6 @@ export class ConversationEngine {
     }
     
     return 'general';
-  }
-
-  private updateSuggestions(taskType: string, context: any): void {
-    const store = useAIAgentStore.getState();
-    const suggestions = [];
-
-    switch (taskType) {
-      case 'sales':
-        suggestions.push(
-          { id: '1', text: 'Vezi planurile disponibile', icon: '💎' },
-          { id: '2', text: 'Calculează ROI', icon: '📊' },
-          { id: '3', text: 'Solicită demo', icon: '🎥' }
-        );
-        break;
-      case 'support':
-        suggestions.push(
-          { id: '1', text: 'Verifică statusul', icon: '✅' },
-          { id: '2', text: 'Contactează suport', icon: '🤝' },
-          { id: '3', text: 'Vezi documentația', icon: '📚' }
-        );
-        break;
-      case 'technical':
-        suggestions.push(
-          { id: '1', text: 'Exemplu de cod', icon: '💻' },
-          { id: '2', text: 'API Reference', icon: '🔧' },
-          { id: '3', text: 'Tutorial pas cu pas', icon: '📖' }
-        );
-        break;
-      default:
-        suggestions.push(
-          { id: '1', text: 'Explorează agenții', icon: '🤖' },
-          { id: '2', text: 'Vezi beneficiile', icon: '✨' },
-          { id: '3', text: 'Întrebări frecvente', icon: '❓' }
-        );
-    }
-
-    store.setSuggestions(suggestions);
   }
 
   destroy(): void {

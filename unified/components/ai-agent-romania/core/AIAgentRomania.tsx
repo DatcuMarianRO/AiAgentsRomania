@@ -4,7 +4,7 @@ import { FloatingWidget } from '../ui/FloatingWidget';
 import { ConversationEngine } from './ConversationEngine';
 import { ContextManager } from './ContextManager';
 import { OpenRouterClient } from '../intelligence/OpenRouterClient';
-import { useAIAgentStore } from '../store/aiAgentStore';
+import { Message, Suggestion, QuickAction } from '../store/aiAgentStore';
 
 export interface AIAgentRomaniaProps {
   apiKey: string;
@@ -36,8 +36,14 @@ export const AIAgentRomania: React.FC<AIAgentRomaniaProps> = ({
   initialOpen = false
 }) => {
   const router = useRouter();
-  const store = useAIAgentStore();
   const [isClient, setIsClient] = useState(false);
+  const [isOpen, setIsOpen] = useState(initialOpen);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [processingState, setProcessingState] = useState<'idle' | 'thinking' | 'responding'>('idle');
+  const [streamingResponse, setStreamingResponse] = useState('');
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [quickActions, setQuickActions] = useState<QuickAction[]>([]);
+  
   const openRouterRef = useRef<OpenRouterClient | null>(null);
   const conversationEngineRef = useRef<ConversationEngine | null>(null);
   const contextManagerRef = useRef<ContextManager | null>(null);
@@ -47,7 +53,7 @@ export const AIAgentRomania: React.FC<AIAgentRomaniaProps> = ({
     setIsClient(true);
   }, []);
 
-  // Initialize OpenRouter client
+  // Initialize services
   useEffect(() => {
     if (!isClient || !apiKey) return;
 
@@ -64,34 +70,35 @@ export const AIAgentRomania: React.FC<AIAgentRomaniaProps> = ({
       contextManagerRef.current
     );
 
-    // Initialize store
-    store.initialize({
-      position,
-      theme,
-      language,
-      features,
-      isOpen: initialOpen
-    });
+    // Initial welcome message
+    setMessages([{
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: 'Bună! 👋 Sunt AI AGENT ROMANIA, asistentul tău personal. Cum te pot ajuta azi?',
+      timestamp: new Date()
+    }]);
+
+    // Set initial suggestions based on page
+    updateSuggestionsForPage();
 
     return () => {
-      // Cleanup
       conversationEngineRef.current?.destroy();
       contextManagerRef.current?.destroy();
     };
-  }, [isClient, apiKey, position, theme, language, features, initialOpen, router, store]);
+  }, [isClient, apiKey, router]);
 
   // Handle route changes
   useEffect(() => {
     const handleRouteChange = () => {
       contextManagerRef.current?.updateContext();
-      store.updateContext(contextManagerRef.current?.getContext());
+      updateSuggestionsForPage();
     };
 
     router.events.on('routeChangeComplete', handleRouteChange);
     return () => {
       router.events.off('routeChangeComplete', handleRouteChange);
     };
-  }, [router, store]);
+  }, [router]);
 
   // Proactive assistance
   useEffect(() => {
@@ -106,8 +113,14 @@ export const AIAgentRomania: React.FC<AIAgentRomaniaProps> = ({
       
       idleTimer = setTimeout(() => {
         const idleTime = (Date.now() - lastActivity) / 1000;
-        if (idleTime > 60 && !store.isOpen) {
-          store.showProactiveMessage("Pot să te ajut cu ceva? 🤔");
+        if (idleTime > 60 && !isOpen) {
+          setIsOpen(true);
+          setMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: 'Pot să te ajut cu ceva? 🤔',
+            timestamp: new Date()
+          }]);
         }
       }, 60000);
     };
@@ -126,60 +139,108 @@ export const AIAgentRomania: React.FC<AIAgentRomaniaProps> = ({
         window.removeEventListener(event, resetIdleTimer);
       });
     };
-  }, [features.proactive, isClient, store]);
+  }, [features.proactive, isClient, isOpen]);
+
+  const updateSuggestionsForPage = () => {
+    const context = contextManagerRef.current?.getContext();
+    if (!context) return;
+
+    const metadata = context.metadata || {};
+    setSuggestions(
+      metadata.suggestions?.map((text: string, index: number) => ({
+        id: index.toString(),
+        text,
+        icon: ['🎯', '✨', '🚀'][index] || '💡'
+      })) || []
+    );
+  };
 
   const handleSendMessage = useCallback(async (message: string) => {
-    if (!conversationEngineRef.current) return;
+    if (!conversationEngineRef.current || !openRouterRef.current) return;
 
     try {
-      store.setProcessingState('thinking');
+      // Add user message
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: message,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, userMessage]);
+
+      setProcessingState('thinking');
       
-      const response = await conversationEngineRef.current.sendMessage(message, {
-        stream: true,
-        context: store.currentContext
+      // Get context
+      const context = contextManagerRef.current?.getContext();
+      const systemPrompt = await openRouterRef.current.generateSystemPrompt({
+        page: context?.path,
+        language: 'ro',
+        conversationMode: 'general'
       });
 
-      store.setProcessingState('responding');
+      // Prepare messages for API
+      const apiMessages = [
+        { role: 'system' as const, content: systemPrompt },
+        ...messages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+        { role: 'user' as const, content: message }
+      ];
+
+      setProcessingState('responding');
       
+      // Get response with streaming
+      const response = await openRouterRef.current.chat(apiMessages, {
+        stream: true,
+        taskType: 'general',
+        context
+      });
+
       // Handle streaming response
       let fullResponse = '';
+      setStreamingResponse('');
+      
       for await (const chunk of response) {
         fullResponse += chunk;
-        store.updateStreamingResponse(fullResponse);
+        setStreamingResponse(fullResponse);
       }
 
-      store.addMessage({
+      // Add assistant message
+      const assistantMessage: Message = {
+        id: Date.now().toString(),
         role: 'assistant',
         content: fullResponse,
         timestamp: new Date()
-      });
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      setStreamingResponse('');
+      setProcessingState('idle');
 
-      store.setProcessingState('idle');
     } catch (error) {
       console.error('Error sending message:', error);
-      store.setProcessingState('idle');
-      store.addMessage({
+      setProcessingState('idle');
+      setStreamingResponse('');
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
         role: 'assistant',
         content: 'Scuze, am întâmpinat o problemă. Poți încerca din nou?',
         timestamp: new Date()
-      });
+      }]);
     }
-  }, [store]);
+  }, [messages]);
 
   if (!isClient) return null;
 
   return (
     <FloatingWidget
-      isOpen={store.isOpen}
-      onToggle={() => store.toggleOpen()}
-      position={store.position}
-      theme={store.theme}
-      messages={store.messages}
+      isOpen={isOpen}
+      onToggle={() => setIsOpen(!isOpen)}
+      position={position}
+      theme={theme}
+      messages={messages}
       onSendMessage={handleSendMessage}
-      processingState={store.processingState}
-      streamingResponse={store.streamingResponse}
-      suggestions={store.suggestions}
-      quickActions={store.quickActions}
+      processingState={processingState}
+      streamingResponse={streamingResponse}
+      suggestions={suggestions}
+      quickActions={quickActions}
       features={features}
     />
   );

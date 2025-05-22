@@ -1,11 +1,18 @@
 import { NextRouter } from 'next/router';
 
+export interface PageMetadata {
+  greeting: string;
+  suggestions: string[];
+  mode: string;
+  priority: string;
+}
+
 export interface PageContext {
   path: string;
   title: string;
   type: string;
   params?: any;
-  metadata?: any;
+  metadata?: PageMetadata;
 }
 
 export class ContextManager {
