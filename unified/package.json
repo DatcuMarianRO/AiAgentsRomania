@@ -1,0 +1,48 @@
+{
+  "name": "unified-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unified server for AI Agents Romania (Frontend + Backend)",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development ts-node --project src/tsconfig.json src/server.ts",
+    "build": "tsc && npm run build:frontend",
+    "build:frontend": "cd ../frontend && npm run build",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-agents-romania/shared": "0.1.0",
+    "@gsap/react": "^2.1.1",
+    "@splinetool/react-spline": "^4.0.0",
+    "@types/three": "^0.176.0",
+    "autoprefixer": "^10.4.21",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.19.2",
+    "gsap": "^3.12.5",
+    "helmet": "^8.1.0",
+    "http-proxy-middleware": "^3.0.0",
+    "lucide-react": "^0.358.0",
+    "morgan": "^1.10.0",
+    "next": "^14.2.14",
+    "postcss": "^8.5.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.17",
+    "tailwindcss-animate": "^1.0.7",
+    "three": "^0.176.0",
+    "winston": "^3.12.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.18",
+    "@types/express": "^4.17.21",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.15.18",
+    "@types/react": "^18.2.79",
+    "@types/react-dom": "^18.2.19",
+    "cross-env": "^7.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
