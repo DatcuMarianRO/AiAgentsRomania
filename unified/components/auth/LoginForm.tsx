@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
-import { useRouter } from 'next/router';
-import { useAuth } from '../../hooks/useAuth';
-import Button from '../Button';
+'use client';
 
-interface LoginFormProps {
-  onToggleMode?: () => void;
-}
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
+export function LoginForm() {
   const router = useRouter();
-  const { login, loading, error } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -58,11 +56,28 @@ const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
       return;
     }
 
+    setLoading(true);
+    setError(null);
+
     try {
-      await login(formData.email, formData.password);
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'A apărut o eroare');
+        return;
+      }
+
       router.push('/dashboard');
     } catch (err) {
-      // Error is handled by useAuth hook
+      setError('A apărut o eroare. Te rugăm să încerci din nou.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,46 +142,33 @@ const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
             </div>
           )}
 
-          <Button
+          <button
             type="submit"
             disabled={loading}
-            className="w-full"
+            className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Se încarcă...
-              </span>
-            ) : (
-              '🚀 Autentificare'
-            )}
-          </Button>
+            {loading ? 'Se conectează...' : 'Conectare'}
+          </button>
         </form>
 
         <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={onToggleMode}
+          <Link
+            href="/auth/register"
             className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
           >
             Nu ai cont? Înregistrează-te aici
-          </button>
+          </Link>
         </div>
 
         <div className="mt-4 text-center">
-          <button
-            type="button"
+          <Link
+            href="/auth/reset-password"
             className="text-gray-400 hover:text-gray-300 text-sm transition-colors"
           >
             Ai uitat parola?
-          </button>
+          </Link>
         </div>
       </div>
     </div>
   );
-};
-
-export default LoginForm;
+}
