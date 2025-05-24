@@ -32,6 +32,10 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# sensitive config files
+config/firebase-service-account.json
+config/*.json
+
 # turbo
 .turbo
 

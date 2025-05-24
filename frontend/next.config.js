@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Static export for production
-  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
+  // Remove static export - we need server-side features
+  // output: 'export',
   trailingSlash: true,
   images: {
     domains: [
@@ -18,7 +18,7 @@ const nextConfig = {
       },
     ],
     // Unoptimized for static export
-    unoptimized: process.env.NODE_ENV === 'production',
+    unoptimized: false,
   },
   experimental: {
     // serverActions sunt disponibile by default în Next.js 14+

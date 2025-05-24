@@ -23,6 +23,9 @@ export default function Home() {
               <Link href="/docs" className="transition-colors hover:text-foreground/80">
                 Docs
               </Link>
+              <Link href="/invent-evolution" className="transition-colors hover:text-foreground/80 text-blue-500 font-semibold">
+                INVENT EVOLUTION
+              </Link>
             </nav>
             <div className="hidden sm:flex space-x-2">
               <Link href="/auth/login">
