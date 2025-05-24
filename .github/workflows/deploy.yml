@@ -1,0 +1,127 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      with_n8n:
+        description: 'Deploy with n8n automation'
+        required: false
+        default: false
+        type: boolean
+      force_rebuild:
+        description: 'Force rebuild all containers'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to VPS
+      run: |
+        # Prepare deployment arguments
+        DEPLOY_ARGS=""
+        if [ "${{ github.event.inputs.with_n8n }}" = "true" ]; then
+          DEPLOY_ARGS="$DEPLOY_ARGS --with-n8n"
+        fi
+        if [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
+          DEPLOY_ARGS="$DEPLOY_ARGS --force-rebuild"
+        fi
+        
+        ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          set -e
+          
+          # Navigate to project directory
+          cd /opt/ai-agents
+          
+          # Pull latest changes
+          git fetch origin
+          git reset --hard origin/main
+          
+          # Run deployment script
+          sudo ./scripts/deploy.sh ${{ env.DEPLOY_ARGS }}
+          
+          # Run health check
+          ./scripts/health-check.sh --json > /tmp/health-check.json
+          
+          # Output health check results
+          echo "=== Deployment Health Check ==="
+          cat /tmp/health-check.json
+          
+          # Check if deployment was successful
+          if [ "$(jq -r '.overall_status' /tmp/health-check.json)" != "healthy" ]; then
+            echo "❌ Deployment health check failed"
+            exit 1
+          else
+            echo "✅ Deployment successful and healthy"
+          fi
+        EOF
+
+    - name: Verify deployment
+      run: |
+        # Wait a moment for services to stabilize
+        sleep 30
+        
+        # Check frontend
+        echo "Checking frontend..."
+        curl -f https://ai-agents-romania.com/health
+        
+        # Check backend
+        echo "Checking backend..."
+        curl -f https://api.ai-agents-romania.com/health
+        
+        echo "✅ All services are responding correctly"
+
+    - name: Notify deployment status
+      if: always()
+      run: |
+        if [ $? -eq 0 ]; then
+          echo "🚀 Deployment completed successfully!"
+          echo "Frontend: https://ai-agents-romania.com"
+          echo "API: https://api.ai-agents-romania.com"
+          echo "Docs: https://api.ai-agents-romania.com/docs"
+        else
+          echo "❌ Deployment failed!"
+          exit 1
+        fi
+
+  health-check:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always() && needs.deploy.result == 'success'
+    
+    steps:
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Run detailed health check
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          cd /opt/ai-agents
+          ./scripts/health-check.sh --detailed
+        EOF
+
+    - name: Check SSL certificates
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          echo "=== SSL Certificate Status ==="
+          certbot certificates
+        EOF

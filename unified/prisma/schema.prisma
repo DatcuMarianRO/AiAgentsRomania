@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  passwordHash    String         @map("password_hash")
+  fullName        String?        @map("full_name")
+  role            UserRole       @default(USER)
+  status          UserStatus     @default(ACTIVE)
+  emailVerified   Boolean        @default(false) @map("email_verified")
+  avatarUrl       String?        @map("avatar_url")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  
+  agents          Agent[]
+  subscriptions   Subscription[]
+  orders          Order[]
+  sessions        Session[]
+  notifications   Notification[]
+  
+  @@map("users")
+}
+
+model Agent {
+  id               String         @id @default(uuid())
+  name             String
+  slug             String         @unique
+  description      String
+  longDescription  String?        @map("long_description")
+  category         String
+  tags             String[]
+  pricing          Json           // {monthly: 99, yearly: 999, oneTime: 2999}
+  features         Json
+  modelProvider    String         @map("model_provider") // openai, anthropic
+  modelName        String         @map("model_name")      // gpt-4, claude-3
+  status           AgentStatus    @default(DRAFT)
+  rating           Float          @default(0)
+  totalReviews     Int            @default(0) @map("total_reviews")
+  totalUsers       Int            @default(0) @map("total_users")
+  imageUrl         String?        @map("image_url")
+  systemPrompt     String?        @map("system_prompt")
+  temperature      Float          @default(0.7)
+  maxTokens        Int            @default(2000) @map("max_tokens")
+  
+  createdById      String         @map("created_by")
+  createdBy        User           @relation(fields: [createdById], references: [id])
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  
+  subscriptions    Subscription[]
+  conversations    Conversation[]
+  reviews          Review[]
+  
+  @@index([category])
+  @@index([status])
+  @@map("agents")
+}
+
+model Subscription {
+  id                    String               @id @default(uuid())
+  userId                String               @map("user_id")
+  user                  User                 @relation(fields: [userId], references: [id])
+  agentId               String               @map("agent_id")
+  agent                 Agent                @relation(fields: [agentId], references: [id])
+  stripeSubscriptionId  String?              @unique @map("stripe_subscription_id")
+  stripeCustomerId      String?              @map("stripe_customer_id")
+  status                SubscriptionStatus
+  plan                  SubscriptionPlan     @default(MONTHLY)
+  currentPeriodStart    DateTime             @map("current_period_start")
+  currentPeriodEnd      DateTime             @map("current_period_end")
+  cancelAtPeriodEnd     Boolean              @default(false) @map("cancel_at_period_end")
+  canceledAt            DateTime?            @map("canceled_at")
+  trialEndsAt           DateTime?            @map("trial_ends_at")
+  metadata              Json?
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
+  
+  @@unique([userId, agentId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model Order {
+  id                    String         @id @default(uuid())
+  userId                String         @map("user_id")
+  user                  User           @relation(fields: [userId], references: [id])
+  stripePaymentIntentId String?        @unique @map("stripe_payment_intent_id")
+  amount                Float
+  currency              String         @default("EUR")
+  status                OrderStatus    @default(PENDING)
+  type                  OrderType
+  items                 Json           // [{agentId, name, price, type}]
+  invoiceUrl            String?        @map("invoice_url")
+  metadata              Json?
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
+  
+  @@index([userId])
+  @@index([status])
+  @@map("orders")
+}
+
+model Conversation {
+  id         String    @id @default(uuid())
+  agentId    String    @map("agent_id")
+  agent      Agent     @relation(fields: [agentId], references: [id])
+  userId     String?   @map("user_id")
+  sessionId  String    @map("session_id")
+  messages   Json      // Array of messages
+  metadata   Json?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  
+  @@index([agentId])
+  @@index([userId])
+  @@map("conversations")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  agentId   String   @map("agent_id")
+  agent     Agent    @relation(fields: [agentId], references: [id])
+  userId    String   @map("user_id")
+  rating    Int      // 1-5
+  comment   String?
+  helpful   Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  @@unique([agentId, userId])
+  @@index([agentId])
+  @@map("reviews")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+  token        String   @unique
+  refreshToken String?  @unique @map("refresh_token")
+  userAgent    String?  @map("user_agent")
+  ipAddress    String?  @map("ip_address")
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Notification {
+  id         String              @id @default(uuid())
+  userId     String              @map("user_id")
+  user       User                @relation(fields: [userId], references: [id])
+  type       NotificationType
+  title      String
+  message    String
+  data       Json?
+  read       Boolean             @default(false)
+  readAt     DateTime?           @map("read_at")
+  createdAt  DateTime            @default(now()) @map("created_at")
+  
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  @@map("settings")
+}
+
+// ENUMS
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum AgentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  PAUSED
+  TRIALING
+}
+
+enum SubscriptionPlan {
+  MONTHLY
+  YEARLY
+  LIFETIME
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum OrderType {
+  SUBSCRIPTION
+  ONE_TIME
+  REFUND
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  SUBSCRIPTION_RENEWAL
+  SUBSCRIPTION_CANCELED
+  ORDER_COMPLETED
+  AGENT_UPDATE
+}
